@@ -1,0 +1,83 @@
+Build “المطبخ الرقمي (Al-Matbakh Ar-Raqami)” (EN + AR, Cash/Card/Credit incl. Talabat/Snoonu as Credit)
+Build a simple, fast restaurant POS & back-office with bilingual UI (primary English, secondary Arabic with full RTL). Support order types Dine-In / Take Away / Delivery. Payments: Cash, Card, Credit. Aggregator orders (Talabat, Snoonu) are entered in POS manually and recorded as Credit; weekly settlements are reconciled in back-office (no webhooks/polling in MVP).
+
+1) Core Scope & Flows (MVP)
+* Order capture
+    * Dine-In (optional tables), Take Away, Delivery.
+    * Aggregator capture mode: cashier selects Source = Talabat or Snoonu → POS flags order as Credit (Aggregator).
+* Checkout & tenders
+    * Cash, Card (terminal handoff adapter), Credit.
+    * Split tender; refund/void with reason; manager override where required.
+* Kitchen coordination
+    * Auto KOT print per station or KDS tiles (bump/recall, timers).
+* Reporting
+    * Z-Report, Sales by Channel/Source, Tender breakdown, Tips/Service charge.
+* Offline-first
+    * Local cache (menus, orders, translations); WAL; idempotent sync.
+* Back-office settlement
+    * Weekly Aggregator Settlement module: mark Talabat/Snoonu Credit orders as settled against a weekly remittance; exception queue for mismatches; simple ledger.
+Targets (MVP): add item <150 ms; order→KOT <1s LAN; 99.9% terminal handoff success; <0.5% cash variance; order (any source)→settle ≤60s median.
+
+2) Tech & Architecture
+* POS/KDS Frontend: React + TypeScript (PWA or Electron/Tauri). State: Redux Toolkit or Zustand. Data: TanStack Query. Offline: IndexedDB + service worker.
+* Back-office: Next.js (Admin, Reports, Settlement).
+* Backend: Node.js (NestJS) or .NET 8; Postgres (OLTP), Redis (queues/pubsub). Object storage for PDFs.
+* Printing: ESC/POS over Ethernet/USB; PDF fallback.
+* Payments: Terminal adapter (sale/void/refund/status) storing rrn/stan/authCode.
+* Sync: WAL events with idempotency keys and conflict rules.
+
+3) EN+AR Internationalization w/ RTL
+* i18next (ICU); persist locale.
+* Apply [dir="rtl"] for Arabic; CSS logical props; mirrored icons/layouts; Arabic-capable font (e.g., Noto Naskh Arabic).
+* Store translatables as { en, ar }.
+* Receipts/KOT can be bilingual or locale-aware.
+
+4) Data Model (minimum)
+stores, terminals, users, roles, shifts, cash_drawers
+categories, items, item_sizes, modifiers, item_modifiers
+orders, order_items, order_item_modifiers, order_status
+payments (method: CASH|CARD|CREDIT), refunds, voids
+kitchens, stations, routing_rules, kds_tickets
+customers, delivery_details
+ledger_accounts (e.g., TALABAT, SNOONU), settlements, settlement_lines
+audit_logs, sync_events
+Indexes: (store_id, status), (created_at), FTS for EN+AR names.
+
+5) Aggregator “Credit” Handling
+* Capture flow: New Order → Source = TALABAT | SNOONU (picker) → system auto-sets payment_method = CREDIT and credit_account = selected source.
+* Ledger: create Ledger Accounts for TALABAT, SNOONU. Every aggregator order posts to that account.
+* Weekly settlement UI:
+    * Upload remittance CSV/PDF total OR enter totals manually; choose week range.
+    * System lists unsettled orders for that account; operator checks → Settle.
+    * Auto create Settlement (header with period, amount, ref#) + lines (orders applied). Differences go to Exceptions.
+* Reports:
+    * Aging of Credit (by source), Settled vs Unsettled, Exceptions.
+* Reconciliation rules:
+    * Match by date range + total; allow manual attach/detach of orders to a settlement.
+    * Keep audit trail (who, when, why).
+
+7) POS/KDS UX
+* One-screen POS: Category grid → item grid → size/mods → cart → totals (tips/service charge) → tender buttons (Cash/Card/Credit) and Source selector (POS/Talabat/Snoonu).
+* Open orders: tiles/tabs; quick switch; void/discount w/ manager PIN.
+* KDS per station: tiles with timers, bump/recall; routing by item tag.
+* Kitchen printing: big fonts; order type + table/order; items + modifiers (no prices).
+
+9) Bilingual MENU SEED 
+Drinks (المشروبات)
+* Water / ماء — QR 1 
+* Soft Drink / مشروبات غازية — QR 3 
+Bread (الخبز)
+* Tandoor Bread (3 pcs) / خبز تنّور (٣ قطع) — QR 1 
+Pizza (البيتزا) — sizes S/M
+* Margherita Pizza / بيتزا مارغريتا — S 20, M 30 
+* Vegetable Pizza / بيتزا خضار — S 20, M 30 
+* Chicken Pizza / بيتزا دجاج — S 20, M 30 
+* Meat Pizza / بيتزا لحم — S 20, M 30 
+Egyptian Mishaltet (المشلتّت المصري)
+* By size (common S/M price pattern): e.g., Plain / كرافت سادة, Honey & Cheese / عسل وجبنة, Honey & Cream / عسل وقشطة, Honey & Nuts / عسل ومكسّرات — S 20, M 30 
+* By pieces (mini mishaltet): 1 pc = 30, 2 pcs = 60, 4 pcs = 120 (pattern visible on price table) 
+Syrian Pastries & Fatayer (الفطائر/المعجنات الشامية)
+* Zaatar Pie / فطيرة زعتر — QR 5 (piece) 
+* Cheese Pie / فطيرة جبنة — QR 6 (piece) 
+* Spinach Pie / فطيرة سبانخ — QR 5 (piece) 
+* Meat Pie / فطيرة لحم — QR 6 (piece)  (Family sizes are hinted on the scan; if needed, enable S/M/L/XL grid and let managers edit exact values later.) 
