@@ -258,16 +258,18 @@ function ActiveUsersContent() {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center mr-4 bg-blue-200 shadow-sm">
-                <Users className="h-8 w-8 text-blue-600" />
-              </div>
-              {language === 'ar' ? 'المستخدمون النشطون' : 'Active Users'}
-            </h1>
-            <p className="text-gray-600 mt-2">
-              {language === 'ar' ? 'مراقبة المستخدمين النشطين وأنشطتهم في النظام' : 'Monitor active users and their activities in the system'}
-            </p>
+          <div className="flex items-start">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center mr-4 bg-blue-200 shadow-sm mt-1">
+              <Users className="h-8 w-8 text-blue-600" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+                {language === 'ar' ? 'المستخدمون النشطون' : 'Active Users'}
+              </h1>
+              <p className="text-gray-600 mt-2">
+                {language === 'ar' ? 'مراقبة المستخدمين النشطين وأنشطتهم في النظام' : 'Monitor active users and their activities in the system'}
+              </p>
+            </div>
           </div>
           <Button className="bg-white  text-blue-500 border border-blue-500 ">
             <RefreshCw className="h-4 w-4 mr-2" />

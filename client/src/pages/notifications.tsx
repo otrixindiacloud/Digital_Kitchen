@@ -239,26 +239,28 @@ function NotificationsContent() {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-              <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center mr-4 shadow-lg relative">
-                <Bell className="h-6 w-6 text-blue-600" />
-                {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
-                    {unreadCount > 9 ? '9+' : unreadCount}
-                  </span>
-                )}
-              </div>
-              {language === 'ar' ? 'الإشعارات' : 'Notifications'}
+          <div className="flex items-center">
+            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mr-4 shadow-lg relative mt-1">
+              <Bell className="h-8 w-8 text-blue-600" />
               {unreadCount > 0 && (
-                <Badge variant="secondary" className="ml-3 bg-blue-100 text-blue-800">
-                  {unreadCount} {language === 'ar' ? 'جديد' : 'new'}
-                </Badge>
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
               )}
-            </h1>
-            <p className="text-gray-600 mt-2">
-              {language === 'ar' ? 'إدارة وإشعارات النظام' : 'Manage and view system notifications'}
-            </p>
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+                {language === 'ar' ? 'الإشعارات' : 'Notifications'}
+                {unreadCount > 0 && (
+                  <Badge variant="secondary" className="ml-3 bg-blue-100 text-blue-800">
+                    {unreadCount} {language === 'ar' ? 'جديد' : 'new'}
+                  </Badge>
+                )}
+              </h1>
+              <p className="text-gray-600 mt-2">
+                {language === 'ar' ? 'إدارة وإشعارات النظام' : 'Manage and view system notifications'}
+              </p>
+            </div>
           </div>
           <div className="flex space-x-2">
             <Button 
@@ -296,56 +298,57 @@ function NotificationsContent() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <Card className="shadow-lg border border-gray-200">
+        <Card className="shadow-lg border border-gray-200 bg-white">
           <CardContent className="p-4">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                <Bell className="h-6 w-6 text-blue-600" />
-              </div>
+            <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-bold text-black">{language === 'ar' ? 'إجمالي الإشعارات' : 'Total Notifications'}</p>
-                <p className="text-2xl font-bold text-gray-900">{notifications.length}</p>
+                <p className="text-3xl font-extrabold text-gray-900">{notifications.length}</p>
+              </div>
+              <div className="w-10 h-10 bg-blue-200 rounded-lg flex items-center justify-center ml-3">
+                <Bell className="h-6 w-6 text-blue-600" />
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="shadow-lg border border-gray-200">
+        <Card className="shadow-lg border border-gray-200 bg-white">
           <CardContent className="p-4">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
-                <AlertCircle className="h-6 w-6 text-orange-600" />
-              </div>
+            <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-bold text-black">{language === 'ar' ? 'غير مقروء' : 'Unread'}</p>
-                <p className="text-2xl font-bold text-gray-900">{unreadCount}</p>
+                <p className="text-3xl font-extrabold text-gray-900">{unreadCount}</p>
               </div>
+              <div className="w-10 h-10 bg-orange-200 rounded-lg flex items-center justify-center ml-3">
+                <AlertCircle className="h-6 w-6 text-orange-600" />
+              </div>
+
             </div>
           </CardContent>
         </Card>
-        <Card className="shadow-lg border border-gray-200">
+        <Card className="shadow-lg border border-gray-200 bg-white">
           <CardContent className="p-4">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mr-3">
-                <AlertTriangle className="h-6 w-6 text-red-600" />
-              </div>
+            <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-bold text-black">{language === 'ar' ? 'عاجل' : 'Urgent'}</p>
-                <p className="text-2xl font-bold text-gray-900">{urgentCount}</p>
+                <p className="text-3xl font-extrabold text-gray-900">{urgentCount}</p>
+              </div>
+              <div className="w-10 h-10 bg-red-200 rounded-lg flex items-center justify-center ml-3">
+                <AlertTriangle className="h-6 w-6 text-red-600" />
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="shadow-lg border border-gray-200">
+        <Card className="shadow-lg border border-gray-200 bg-white">
           <CardContent className="p-4">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-3">
-                <CheckCircle className="h-6 w-6 text-green-600" />
-              </div>
+            <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-bold text-black">{language === 'ar' ? 'يتطلب إجراء' : 'Action Required'}</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-3xl font-extrabold text-gray-900">
                   {notifications.filter(n => n.actionRequired && !n.isRead).length}
                 </p>
+              </div>
+              <div className="w-10 h-10 bg-green-200 rounded-lg flex items-center justify-center ml-3">
+                <CheckCircle className="h-6 w-6 text-green-600" />
               </div>
             </div>
           </CardContent>
@@ -353,7 +356,7 @@ function NotificationsContent() {
       </div>
 
       {/* Search and Filters */}
-      <Card className="mb-6 border border-gray-200 shadow-lg">
+      <Card className="mb-6 border border-gray-200 shadow-lg bg-white">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg font-semibold text-gray-900 flex items-center">
             <Filter className="h-5 w-5 mr-2 text-gray-900" />
@@ -454,8 +457,8 @@ function NotificationsContent() {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Card 
-                        className={`hover:shadow-lg transition-all duration-200 cursor-pointer ${
-                          !notification.isRead ? 'ring-2 ring-blue-200 bg-orange-50/30' : ''
+                        className={`bg-white hover:shadow-lg transition-all duration-200 cursor-pointer ${
+                          !notification.isRead ? 'ring-2 ring-blue-200' : ''
                         }`}
                         onClick={() => !notification.isRead && markAsRead(notification.id)}
                       >
@@ -534,7 +537,7 @@ function NotificationsContent() {
         </TabsContent>
 
         <TabsContent value="settings" className="mt-6">
-          <Card className="border-blue-400">
+          <Card className="border-blue-400 bg-white shadow-lg">
             <CardHeader>
               <CardTitle className="text-blue-600">{language === 'ar' ? 'إعدادات الإشعارات' : 'Notification Settings'}</CardTitle>
               <CardDescription>

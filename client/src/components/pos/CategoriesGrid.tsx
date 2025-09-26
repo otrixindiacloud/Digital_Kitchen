@@ -42,8 +42,8 @@ export function CategoriesGrid({ selectedCategory, onCategorySelect }: Categorie
     <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200" data-testid="categories-grid">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold flex items-center text-gray-800">
-                 <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mr-3 shadow-lg">
-            <i className="fas fa-th-large text-white text-lg"></i>
+          <div className="w-10 h-10 bg-blue-200 rounded-xl flex items-center justify-center mr-3 shadow-lg">
+            <i className="fas fa-th-large text-blue-600 text-lg"></i>
           </div>
           {language === "ar" ? "الفئات" : "Categories"}
         </h2>
@@ -61,23 +61,23 @@ export function CategoriesGrid({ selectedCategory, onCategorySelect }: Categorie
             <Button
               key={category.id}
               variant="outline"
-                     className={`gap-2 whitespace-nowrap rounded-2xl text-sm font-medium transition-all duration-300 touch-target h-32 flex flex-col items-center justify-center p-4 text-center hover:scale-105 group ${
-                       isSelected 
-                         ? "bg-gradient-to-br from-blue-100 to-blue-200 text-blue-700 border-blue-300 scale-105 ring-2 ring-blue-200" 
-                         : "bg-white border-gray-200 text-gray-700"
-                     }`}
+              className={`gap-2 whitespace-nowrap rounded-2xl text-sm font-medium transition-all duration-300 touch-target h-32 flex flex-col items-center justify-center p-4 text-center hover:scale-105 group ${
+                isSelected
+                  ? "bg-blue-50 text-blue-700 border-blue-300 scale-105 ring-2 ring-blue-200"
+                  : "bg-white border-gray-200 text-gray-700"
+              }`}
               onClick={() => handleCategorySelect(category.id)}
               data-testid={`button-category-${category.id}`}
             >
               <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-2 transition-all duration-300 ${
-                isSelected 
-                  ? "bg-blue-200" 
-                  : "bg-gray-100"
+                isSelected
+                  ? "bg-blue-200"
+                  : "bg-gray-200"
               }`}>
                 <i className={`${category.icon} text-2xl ${
-                  isSelected 
-                    ? "text-blue-700" 
-                    : "text-gray-500"
+                  isSelected
+                    ? "text-blue-600"
+                    : "text-gray-600"
                 }`}></i>
               </div>
               <div className="text-center">

@@ -100,8 +100,8 @@ export function ItemsGrid({ categoryId }: ItemsGridProps) {
       <div className="flex-1 bg-white rounded-2xl p-6 shadow-lg border border-gray-200 overflow-hidden flex flex-col" data-testid="items-grid">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold flex items-center text-gray-800">
-                 <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center mr-3 shadow-lg">
-              <i className="fas fa-utensils text-white text-lg"></i>
+            <div className="w-10 h-10 bg-orange-200 rounded-xl flex items-center justify-center mr-3 shadow-lg">
+              <i className="fas fa-utensils text-orange-600 text-lg"></i>
             </div>
             {language === "ar" ? "العناصر" : "Menu Items"}
           </h2>
