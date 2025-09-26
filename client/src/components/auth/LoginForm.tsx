@@ -98,22 +98,22 @@ function LoginFormContent() {
               </Alert>
             )}
 
-            <Button
-              type="submit"
-              size="xl"
-              className="w-full h-14 text-base font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
-              disabled={state.isLoading}
-              data-testid="button-login"
-            >
-              {state.isLoading ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  {t('signingIn', language)}
-                </div>
-              ) : (
-                t('signIn', language)
-              )}
-            </Button>
+              <Button
+                type="submit"
+                size="xl"
+                className="w-full h-14 text-base font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 bg-blue-500 hover:bg-blue-600"
+                disabled={state.isLoading}
+                data-testid="button-login"
+              >
+                {state.isLoading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    {t('signingIn', language)}
+                  </div>
+                ) : (
+                  t('signIn', language)
+                )}
+              </Button>
           </form>
 
           <div className="mt-8 p-6 bg-gradient-to-r from-gray-50 to-gray-100 rounded-2xl border border-gray-200">
