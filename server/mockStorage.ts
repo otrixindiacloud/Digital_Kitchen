@@ -14,6 +14,7 @@ let mockPayments: Payment[] = [];
 let mockCategories: Category[] = [];
 let mockItems: Item[] = [];
 let mockUsers: User[] = [];
+let mockTables: Table[] = [];
 
 export class MockStorage {
   // Users
@@ -199,11 +200,36 @@ export class MockStorage {
   }
 
   // Mock implementations for other methods
-  async getTables(): Promise<Table[]> { return []; }
-  async createTable(table: InsertTable): Promise<Table> { return {} as Table; }
-  async updateTable(id: string, table: Partial<Table>): Promise<Table> { return {} as Table; }
-  async updateTableStatus(id: string, status: string): Promise<void> {}
-  async updateTableActive(id: string, isActive: boolean): Promise<void> {}
+  async getTables(): Promise<Table[]> {
+    return mockTables;
+  }
+
+  async createTable(table: InsertTable): Promise<Table> {
+    const newTable: Table = {
+      id: `table_${Date.now()}`,
+      ...table,
+    };
+    mockTables.push(newTable);
+    return newTable;
+  }
+
+  async updateTable(id: string, table: Partial<Table>): Promise<Table> {
+    const index = mockTables.findIndex(t => t.id === id);
+    if (index === -1) throw new Error("Table not found");
+    mockTables[index] = { ...mockTables[index], ...table };
+    return mockTables[index];
+  }
+
+  async updateTableStatus(id: string, status: string): Promise<void> {
+    const table = mockTables.find(t => t.id === id);
+    if (table) table.status = status;
+  }
+
+  async updateTableActive(id: string, isActive: boolean): Promise<void> {
+    const table = mockTables.find(t => t.id === id);
+    if (table) table.isActive = isActive;
+  }
+
   async getTableOrders(): Promise<any[]> { return []; }
 
   async getInventory(): Promise<Inventory[]> { return []; }

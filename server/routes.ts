@@ -15,6 +15,7 @@ import {
   insertItemSchema,
   insertTableSchema,
   insertInventorySchema,
+  insertInventoryMovementSchema,
   insertShiftSchema,
   insertSettlementSchema
 } from "@shared/schema";
@@ -437,10 +438,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/inventory/movements", async (req, res) => {
     try {
-      const movementData = req.body;
+      const movementData = insertInventoryMovementSchema.parse(req.body);
       const movement = await storage.createInventoryMovement(movementData);
       res.status(201).json(movement);
     } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid movement data", details: error.errors });
+      }
       console.error("Error creating inventory movement:", error);
       res.status(500).json({ error: "Failed to create inventory movement" });
     }

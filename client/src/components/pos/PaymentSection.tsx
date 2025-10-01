@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { usePOS } from "@/store/posStore";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { CardPaymentModal } from "./CardPaymentModal";
 
 export function PaymentSection() {
   const { 
@@ -18,6 +19,7 @@ export function PaymentSection() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  const [cardModalOpen, setCardModalOpen] = useState(false);
   const processOrderMutation = useMutation({
     mutationFn: async (paymentMethod: string) => {
       // Create order
@@ -71,6 +73,13 @@ export function PaymentSection() {
     },
   });
 
+  // Handle card payment modal submit
+  const handleCardPayment = (cardDetails: { cardNumber: string; cardHolder: string; expiry: string; cvv: string }) => {
+    setCardModalOpen(false);
+    // You can send cardDetails to backend if needed
+    processOrderMutation.mutate("card");
+  };
+
   const paymentMethods = [
     {
       id: "cash",
@@ -99,7 +108,14 @@ export function PaymentSection() {
   const isProcessing = processOrderMutation.isPending;
 
   return (
-    <div className="border-t border-gray-200 bg-white" data-testid="payment-section">
+    <>
+      <CardPaymentModal
+        open={cardModalOpen}
+        amount={total}
+        onClose={() => setCardModalOpen(false)}
+        onSubmit={handleCardPayment}
+      />
+      <div className="border-t border-gray-200 bg-white" data-testid="payment-section">
       {/* Order Summary */}
       <div className="p-6 border-b border-gray-200 space-y-4">
         <div className="space-y-3">
@@ -154,26 +170,44 @@ export function PaymentSection() {
         
         <div className="grid grid-cols-1 gap-3">
           {paymentMethods.map((method) => (
-            <Button
-              key={method.id}
-              className={`tender-btn h-auto py-4 px-6 text-left flex items-center justify-between rounded-2xl shadow-sm hover:shadow-lg transition-all duration-200 ${
-                method.id === 'cash' ? 'bg-green-500 hover:bg-green-600 text-white' :
-                method.id === 'card' ? 'bg-blue-500 hover:bg-blue-600 text-white' :
-                'bg-purple-500 hover:bg-purple-600 text-white'
-              }`}
-              onClick={() => processOrderMutation.mutate(method.id)}
-              disabled={isDisabled}
-              data-testid={`button-payment-${method.id}`}
-            >
-              <div className="flex items-center">
-                <i className={`${method.icon} mr-4 text-xl`}></i>
-                <div>
-                  <p className="font-semibold text-base">{method.label}</p>
-                  <p className="text-sm opacity-90">{method.labelAr}</p>
+            method.id === "card" ? (
+              <Button
+                key={method.id}
+                className={`tender-btn h-auto py-4 px-6 text-left flex items-center justify-between rounded-2xl shadow-sm hover:shadow-lg transition-all duration-200 bg-blue-500 hover:bg-blue-600 text-white`}
+                onClick={() => setCardModalOpen(true)}
+                disabled={isDisabled}
+                data-testid={`button-payment-${method.id}`}
+              >
+                <div className="flex items-center">
+                  <i className={`${method.icon} mr-4 text-xl`}></i>
+                  <div>
+                    <p className="font-semibold text-base">{method.label}</p>
+                    <p className="text-sm opacity-90">{method.labelAr}</p>
+                  </div>
                 </div>
-              </div>
-              <i className="fas fa-chevron-right text-lg"></i>
-            </Button>
+                <i className="fas fa-chevron-right text-lg"></i>
+              </Button>
+            ) : (
+              <Button
+                key={method.id}
+                className={`tender-btn h-auto py-4 px-6 text-left flex items-center justify-between rounded-2xl shadow-sm hover:shadow-lg transition-all duration-200 ${
+                  method.id === 'cash' ? 'bg-green-500 hover:bg-green-600 text-white' :
+                  'bg-purple-500 hover:bg-purple-600 text-white'
+                }`}
+                onClick={() => processOrderMutation.mutate(method.id)}
+                disabled={isDisabled}
+                data-testid={`button-payment-${method.id}`}
+              >
+                <div className="flex items-center">
+                  <i className={`${method.icon} mr-4 text-xl`}></i>
+                  <div>
+                    <p className="font-semibold text-base">{method.label}</p>
+                    <p className="text-sm opacity-90">{method.labelAr}</p>
+                  </div>
+                </div>
+                <i className="fas fa-chevron-right text-lg"></i>
+              </Button>
+            )
           ))}
         </div>
 
@@ -198,5 +232,6 @@ export function PaymentSection() {
         </Button>
       </div>
     </div>
+    </>
   );
 }

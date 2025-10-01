@@ -37,6 +37,7 @@ import {
   Wallet,
   Landmark
 } from 'lucide-react';
+import { DetailsModal } from './DetailsModal';
 import { useToast } from '@/hooks/use-toast';
 import { t } from '@/lib/i18n';
 
@@ -85,6 +86,20 @@ export function SettlementPayments({ isActive }: SettlementPaymentsProps) {
   const [isPaymentMethodDialogOpen, setIsPaymentMethodDialogOpen] = useState(false);
   const [editingPaymentMethod, setEditingPaymentMethod] = useState<PaymentMethod | null>(null);
   const { toast } = useToast();
+
+  // Details modal state
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+  const [detailsModalTitle, setDetailsModalTitle] = useState('');
+  const [detailsModalDescription, setDetailsModalDescription] = useState<string | undefined>(undefined);
+  const [detailsModalData, setDetailsModalData] = useState<Record<string, any>>({});
+
+  // Helper to open details modal
+  const openDetailsModal = (title: string, description: string | undefined, details: Record<string, any>) => {
+    setDetailsModalTitle(title);
+    setDetailsModalDescription(description);
+    setDetailsModalData(details);
+    setDetailsModalOpen(true);
+  };
 
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([
     {
@@ -676,6 +691,20 @@ export function SettlementPayments({ isActive }: SettlementPaymentsProps) {
                             variant="outline"
                             size="sm"
                             className="hover:bg-blue-50 hover:border-blue-200 w-10 h-10 rounded-full"
+                            onClick={() => openDetailsModal(
+                              'Settlement Details',
+                              `Reference: ${settlement.reference}`,
+                              {
+                                Date: new Date(settlement.date).toLocaleDateString(),
+                                Reference: settlement.reference,
+                                'Payment Method': settlement.paymentMethod,
+                                'Total Amount': `QR ${settlement.totalAmount.toFixed(2)}`,
+                                'Processing Fee': `QR ${settlement.processingFee.toFixed(2)}`,
+                                'Net Amount': `QR ${settlement.netAmount.toFixed(2)}`,
+                                Status: settlement.status,
+                                'Transaction Count': settlement.transactionCount
+                              }
+                            )}
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
@@ -759,6 +788,19 @@ export function SettlementPayments({ isActive }: SettlementPaymentsProps) {
                             variant="outline"
                             size="sm"
                             className="hover:bg-blue-50 hover:border-blue-200 w-10 h-10 rounded-full"
+                            onClick={() => openDetailsModal(
+                              'Transaction Details',
+                              `Reference: ${transaction.reference}`,
+                              {
+                                'Order ID': transaction.orderId,
+                                Customer: transaction.customerName,
+                                Amount: `QR ${transaction.amount.toFixed(2)}`,
+                                'Payment Method': transaction.paymentMethod,
+                                Status: transaction.status,
+                                'Date & Time': new Date(transaction.timestamp).toLocaleString(),
+                                Reference: transaction.reference
+                              }
+                            )}
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
@@ -921,6 +963,17 @@ export function SettlementPayments({ isActive }: SettlementPaymentsProps) {
                       variant="outline"
                       size="sm"
                       className="hover:bg-green-50 hover:border-green-200"
+                      onClick={() => openDetailsModal(
+                        'Payment Method Details',
+                        method.name,
+                        {
+                          Name: method.name,
+                          Type: method.type,
+                          'Processing Fee': `${method.processingFee}%`,
+                          'Settlement Time': method.settlementTime,
+                          Status: method.isActive ? 'Active' : 'Inactive'
+                        }
+                      )}
                     >
                       <Eye className="h-4 w-4" />
                     </Button>
@@ -931,6 +984,14 @@ export function SettlementPayments({ isActive }: SettlementPaymentsProps) {
           </div>
         </TabsContent>
       </Tabs>
+      {/* Details Modal */}
+      <DetailsModal
+        open={detailsModalOpen}
+        onClose={() => setDetailsModalOpen(false)}
+        title={detailsModalTitle}
+        description={detailsModalDescription}
+        details={detailsModalData}
+      />
     </div>
   );
 }

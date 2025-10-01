@@ -148,6 +148,16 @@ export const inventory = pgTable("inventory", {
   lastUpdated: timestamp("last_updated").default(sql`CURRENT_TIMESTAMP`),
 });
 
+export const inventoryMovements = pgTable("inventory_movements", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  inventoryId: varchar("inventory_id").notNull().references(() => inventory.id),
+  type: text("type").notNull(), // 'in', 'out', 'adjustment'
+  quantity: decimal("quantity", { precision: 10, scale: 3 }).notNull(),
+  reason: text("reason").notNull(),
+  userId: varchar("user_id").references(() => users.id), // who made the movement
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
+});
+
 export const itemIngredients = pgTable("item_ingredients", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   itemId: varchar("item_id").notNull().references(() => items.id),
@@ -380,6 +390,11 @@ export const insertInventorySchema = createInsertSchema(inventory).omit({
   lastUpdated: true,
 });
 
+export const insertInventoryMovementSchema = createInsertSchema(inventoryMovements).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertShiftSchema = createInsertSchema(shifts).omit({
   id: true,
 });
@@ -425,6 +440,9 @@ export type InsertCustomer = z.infer<typeof insertCustomerSchema>;
 
 export type Inventory = typeof inventory.$inferSelect;
 export type InsertInventory = z.infer<typeof insertInventorySchema>;
+
+export type InventoryMovement = typeof inventoryMovements.$inferSelect;
+export type InsertInventoryMovement = z.infer<typeof insertInventoryMovementSchema>;
 
 export type Shift = typeof shifts.$inferSelect;
 export type InsertShift = z.infer<typeof insertShiftSchema>;

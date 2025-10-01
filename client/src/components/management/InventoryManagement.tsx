@@ -122,9 +122,9 @@ export function InventoryManagement({ isActive }: InventoryManagementProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
-          currentStock: parseFloat(formData.currentStock),
-          minStock: parseFloat(formData.minStock),
-          cost: parseFloat(formData.cost)
+          currentStock: formData.currentStock.toString(),
+          minStock: formData.minStock.toString(),
+          cost: formData.cost.toString()
         }),
       });
 
@@ -159,7 +159,7 @@ export function InventoryManagement({ isActive }: InventoryManagementProps) {
         body: JSON.stringify({
           inventoryId: selectedItem.id,
           type: movementForm.type,
-          quantity: parseFloat(movementForm.quantity),
+          quantity: movementForm.quantity.toString(),
           reason: movementForm.reason
         }),
       });

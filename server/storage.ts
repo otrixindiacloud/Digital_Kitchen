@@ -1,13 +1,13 @@
 import { 
   users, categories, items, itemSizes, modifiers, itemModifiers, 
   orders, orderItems, orderItemModifiers, payments, settlements,
-  tables, inventory, shifts,
+  tables, inventory, inventoryMovements, shifts,
   type User, type InsertUser, type Category, type InsertCategory,
   type Item, type InsertItem, type ItemSize, type Modifier,
   type Order, type InsertOrder, type OrderItem, type InsertOrderItem,
   type Payment, type InsertPayment, type Table, type InsertTable,
-  type Inventory, type InsertInventory, type Shift, type InsertShift,
-  type Settlement, type InsertSettlement
+  type Inventory, type InsertInventory, type InventoryMovement, type InsertInventoryMovement,
+  type Shift, type InsertShift, type Settlement, type InsertSettlement
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql, or } from "drizzle-orm";
@@ -63,8 +63,8 @@ export interface IStorage {
   createInventoryItem(item: InsertInventory): Promise<Inventory>;
   updateInventoryItem(id: string, item: Partial<Inventory>): Promise<Inventory>;
   updateInventoryItemStatus(id: string, isActive: boolean): Promise<void>;
-  getInventoryMovements(): Promise<any[]>;
-  createInventoryMovement(movement: any): Promise<any>;
+  getInventoryMovements(): Promise<InventoryMovement[]>;
+  createInventoryMovement(movement: InsertInventoryMovement): Promise<InventoryMovement>;
 
   // Shifts
   getShifts(): Promise<Shift[]>;
@@ -278,14 +278,60 @@ export class DatabaseStorage implements IStorage {
     await db.update(inventory).set({ isActive }).where(eq(inventory.id, id));
   }
 
-  async getInventoryMovements(): Promise<any[]> {
-    // For now, return empty array - would need to create inventory_movements table
-    return [];
+  async getInventoryMovements(): Promise<InventoryMovement[]> {
+    console.log("Fetching inventory movements...");
+    const movements = await db
+      .select()
+      .from(inventoryMovements)
+      .orderBy(desc(inventoryMovements.createdAt));
+    console.log("Found movements:", movements.length);
+    return movements;
   }
 
-  async createInventoryMovement(movementData: any): Promise<any> {
-    // For now, just return the movement data - would need to create inventory_movements table
-    return movementData;
+  async createInventoryMovement(movementData: InsertInventoryMovement): Promise<InventoryMovement> {
+    console.log("Creating movement with data:", movementData);
+    const [movement] = await db
+      .insert(inventoryMovements)
+      .values(movementData)
+      .returning();
+    console.log("Created movement:", movement);
+    
+    // Update inventory stock based on movement type
+    const inventoryItem = await db
+      .select()
+      .from(inventory)
+      .where(eq(inventory.id, movementData.inventoryId))
+      .limit(1);
+    
+    if (inventoryItem.length > 0) {
+      const currentStock = parseFloat(inventoryItem[0].currentStock);
+      const movementQuantity = parseFloat(movementData.quantity);
+      
+      let newStock: number;
+      switch (movementData.type) {
+        case 'in':
+          newStock = currentStock + movementQuantity;
+          break;
+        case 'out':
+          newStock = Math.max(0, currentStock - movementQuantity);
+          break;
+        case 'adjustment':
+          newStock = movementQuantity; // Set to exact quantity
+          break;
+        default:
+          newStock = currentStock;
+      }
+      
+      await db
+        .update(inventory)
+        .set({ 
+          currentStock: newStock.toString(),
+          lastUpdated: sql`CURRENT_TIMESTAMP`
+        })
+        .where(eq(inventory.id, movementData.inventoryId));
+    }
+    
+    return movement;
   }
 
   // Table Management

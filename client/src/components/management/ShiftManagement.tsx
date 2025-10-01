@@ -33,6 +33,8 @@ import {
   Settings,
   BarChart3
 } from 'lucide-react';
+import { DetailsModal } from './DetailsModal';
+import { StaffManagement } from './StaffManagement';
 import { useToast } from '@/hooks/use-toast';
 import { t } from '@/lib/i18n';
 
@@ -86,6 +88,24 @@ export function ShiftManagement({ isActive }: ShiftManagementProps) {
   const [isAssignmentDialogOpen, setIsAssignmentDialogOpen] = useState(false);
   const [editingShift, setEditingShift] = useState<Shift | null>(null);
   const { toast } = useToast();
+
+  // Modal state for assignment details
+  const [assignmentDetailsOpen, setAssignmentDetailsOpen] = useState(false);
+  const [assignmentDetailsTitle, setAssignmentDetailsTitle] = useState('');
+  const [assignmentDetailsDescription, setAssignmentDetailsDescription] = useState('');
+  const [assignmentDetailsData, setAssignmentDetailsData] = useState<Record<string, any>>({});
+
+  // Modal state for staff edit
+  const [staffEditOpen, setStaffEditOpen] = useState(false);
+  const [editingStaff, setEditingStaff] = useState<StaffMember | null>(null);
+  const [staffForm, setStaffForm] = useState({
+    name: '',
+    role: '',
+    email: '',
+    phone: '',
+    hourlyRate: '',
+    isActive: true
+  });
 
   const [shifts, setShifts] = useState<Shift[]>([
     {
@@ -208,6 +228,58 @@ export function ShiftManagement({ isActive }: ShiftManagementProps) {
       notes: 'Kitchen lead for dinner service'
     }
   ]);
+
+  // Handler for opening assignment details modal
+  const openAssignmentDetails = (assignment, staff, shift) => {
+    setAssignmentDetailsTitle('Assignment Details');
+    setAssignmentDetailsDescription(`${staff?.name || 'Unknown'} - ${shift?.name || 'Unknown'}`);
+    setAssignmentDetailsData({
+      'Staff': staff?.name || 'Unknown',
+      'Role': staff?.role || 'Unknown',
+      'Shift': shift?.name || 'Unknown',
+      'Date': assignment.date,
+      'Time': `${assignment.startTime} - ${assignment.endTime}`,
+      'Status': assignment.status,
+      'Notes': assignment.notes || '-'
+    });
+    setAssignmentDetailsOpen(true);
+  };
+
+  // Handler for opening staff edit modal
+  const openStaffEdit = (staff: StaffMember) => {
+    setEditingStaff(staff);
+    setStaffForm({
+      name: staff.name,
+      role: staff.role,
+      email: staff.email,
+      phone: staff.phone,
+      hourlyRate: staff.hourlyRate.toString(),
+      isActive: staff.isActive
+    });
+    setStaffEditOpen(true);
+  };
+
+  // Update staff member in table
+  const handleStaffEditSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingStaff) return;
+    // Update staffMembers array (simulate local update)
+    const updatedStaff = {
+      ...editingStaff,
+      name: staffForm.name,
+      role: staffForm.role,
+      email: staffForm.email,
+      phone: staffForm.phone,
+      hourlyRate: parseFloat(staffForm.hourlyRate),
+      isActive: staffForm.isActive
+    };
+    const idx = staffMembers.findIndex(s => s.id === editingStaff.id);
+    if (idx !== -1) {
+      staffMembers[idx] = updatedStaff;
+    }
+    setStaffEditOpen(false);
+    setEditingStaff(null);
+  };
 
   const [shiftForm, setShiftForm] = useState({
     name: '',
@@ -829,7 +901,7 @@ export function ShiftManagement({ isActive }: ShiftManagementProps) {
           </div>
         </TabsContent>
 
-        <TabsContent value="assignments" className="space-y-6">
+  <TabsContent value="assignments" className="space-y-6">
           <Card className="group hover:shadow-xl transition-all duration-300 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-white/20 dark:border-slate-700/50">
             <CardHeader>
               <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -998,6 +1070,7 @@ export function ShiftManagement({ isActive }: ShiftManagementProps) {
                             variant="outline"
                             size="sm"
                             className="hover:bg-blue-50 hover:border-blue-200"
+                            onClick={() => openAssignmentDetails(assignment, staff, shift)}
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
@@ -1012,7 +1085,7 @@ export function ShiftManagement({ isActive }: ShiftManagementProps) {
           </Card>
         </TabsContent>
 
-        <TabsContent value="staff" className="space-y-6">
+  <TabsContent value="staff" className="space-y-6">
           <Card className="group hover:shadow-xl transition-all duration-300 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-white/20 dark:border-slate-700/50">
             <CardHeader>
               <CardTitle className="flex items-center gap-3 text-black">
@@ -1068,10 +1141,11 @@ export function ShiftManagement({ isActive }: ShiftManagementProps) {
                           variant="outline"
                           size="sm"
                           className="hover:bg-blue-50 hover:border-blue-200"
+                          onClick={() => openStaffEdit(staff)}
                         >
                           <Edit2 className="h-4 w-4" />
                         </Button>
-                        </TableCell>
+                      </TableCell>
                       </TableRow>
                   ))}
                 </TableBody>
@@ -1081,6 +1155,100 @@ export function ShiftManagement({ isActive }: ShiftManagementProps) {
           </Card>
         </TabsContent>
       </Tabs>
+    {/* Assignment Details Modal */}
+    <DetailsModal
+      open={assignmentDetailsOpen}
+      onClose={() => setAssignmentDetailsOpen(false)}
+      title={assignmentDetailsTitle}
+      description={assignmentDetailsDescription}
+      details={assignmentDetailsData}
+    />
+
+    {/* Staff Edit Modal */}
+    <Dialog open={staffEditOpen} onOpenChange={setStaffEditOpen}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="text-2xl">Edit Staff Member</DialogTitle>
+          <DialogDescription className="text-base">Update staff member information</DialogDescription>
+        </DialogHeader>
+        {editingStaff && (
+          <form onSubmit={handleStaffEditSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="editStaffName">Name</Label>
+              <Input
+                id="editStaffName"
+                value={staffForm.name}
+                onChange={e => setStaffForm({ ...staffForm, name: e.target.value })}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="editStaffRole">Role</Label>
+              <Select
+                value={staffForm.role}
+                onValueChange={value => setStaffForm({ ...staffForm, role: value })}
+              >
+                <SelectTrigger id="editStaffRole">
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Manager">Manager</SelectItem>
+                  <SelectItem value="Head Chef">Head Chef</SelectItem>
+                  <SelectItem value="Chef">Chef</SelectItem>
+                  <SelectItem value="Server">Server</SelectItem>
+                  <SelectItem value="Cashier">Cashier</SelectItem>
+                  <SelectItem value="Host">Host</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="editStaffEmail">Email</Label>
+              <Input
+                id="editStaffEmail"
+                value={staffForm.email}
+                onChange={e => setStaffForm({ ...staffForm, email: e.target.value })}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="editStaffPhone">Phone</Label>
+              <Input
+                id="editStaffPhone"
+                value={staffForm.phone}
+                onChange={e => setStaffForm({ ...staffForm, phone: e.target.value })}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="editStaffRate">Hourly Rate</Label>
+              <Input
+                id="editStaffRate"
+                type="number"
+                value={staffForm.hourlyRate}
+                onChange={e => setStaffForm({ ...staffForm, hourlyRate: e.target.value })}
+                required
+              />
+            </div>
+            <div className="flex items-center space-x-3">
+              <Switch
+                id="editStaffActive"
+                checked={staffForm.isActive}
+                onCheckedChange={checked => setStaffForm({ ...staffForm, isActive: checked })}
+              />
+              <Label htmlFor="editStaffActive">Active Staff Member</Label>
+            </div>
+            <DialogFooter>
+              <Button 
+                type="submit" 
+                className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl"
+              >
+                Update
+              </Button>
+            </DialogFooter>
+          </form>
+        )}
+      </DialogContent>
+    </Dialog>
     </div>
   );
 }

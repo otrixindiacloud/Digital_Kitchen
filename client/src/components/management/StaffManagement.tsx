@@ -40,6 +40,7 @@ import {
   Utensils,
   Building2
 } from 'lucide-react';
+import { DetailsModal } from './DetailsModal';
 import { useToast } from '@/hooks/use-toast';
 import { t } from '@/lib/i18n';
 
@@ -71,6 +72,10 @@ export function StaffManagement({ isActive }: StaffManagementProps) {
   const [roleFilter, setRoleFilter] = useState('all');
   const [isStaffDialogOpen, setIsStaffDialogOpen] = useState(false);
   const [editingStaff, setEditingStaff] = useState<StaffMember | null>(null);
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+  const [detailsModalTitle, setDetailsModalTitle] = useState('');
+  const [detailsModalDescription, setDetailsModalDescription] = useState<string | undefined>(undefined);
+  const [detailsModalData, setDetailsModalData] = useState<Record<string, any>>({});
   const { toast } = useToast();
 
   const [staffMembers, setStaffMembers] = useState<StaffMember[]>([
@@ -139,6 +144,12 @@ export function StaffManagement({ isActive }: StaffManagementProps) {
       emergencyPhone: '+974 1234 5685'
     }
   ]);
+  const openDetailsModal = (title: string, description: string | undefined, details: Record<string, any>) => {
+    setDetailsModalTitle(title);
+    setDetailsModalDescription(description);
+    setDetailsModalData(details);
+    setDetailsModalOpen(true);
+  };
 
   const [staffForm, setStaffForm] = useState({
     name: '',
@@ -786,16 +797,33 @@ export function StaffManagement({ isActive }: StaffManagementProps) {
                       <Button
                         variant="outline"
                         size="sm"
-                          onClick={() => openEditDialog(staff)}
-                          className="hover:bg-blue-50 hover:border-blue-200"
+                        onClick={() => openDetailsModal(
+                          'Staff Details',
+                          staff.name,
+                          {
+                            Name: staff.name,
+                            Role: staff.role,
+                            Email: staff.email,
+                            Phone: staff.phone,
+                            Status: staff.isActive ? 'Active' : 'Inactive'
+                          }
+                        )}
                       >
-                        <Edit2 className="h-4 w-4" />
+                        <Eye className="h-4 w-4" />
                       </Button>
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
+      {/* Details Modal */}
+      <DetailsModal
+        open={detailsModalOpen}
+        onClose={() => setDetailsModalOpen(false)}
+        title={detailsModalTitle}
+        description={detailsModalDescription}
+        details={detailsModalData}
+      />
               </div>
             </div>
           </Card>

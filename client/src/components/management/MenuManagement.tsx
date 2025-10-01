@@ -134,20 +134,66 @@ export function MenuManagement({ isActive }: MenuManagementProps) {
 
   const handleItemSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Validate required fields
+    if (!itemForm.categoryId) {
+      toast({
+        title: t('error'),
+        description: 'Please select a category.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    if (!itemForm.name.en || !itemForm.name.ar) {
+      toast({
+        title: t('error'),
+        description: 'Please enter both English and Arabic names.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    if (!itemForm.basePrice || isNaN(Number(itemForm.basePrice))) {
+      toast({
+        title: t('error'),
+        description: 'Please enter a valid base price.',
+        variant: 'destructive',
+      });
+      return;
+    }
     try {
       const url = editingItem ? `/api/menu/items/${editingItem.id}` : '/api/menu/items';
       const method = editingItem ? 'PUT' : 'POST';
-      
+      // Build payload matching backend schema (only required fields, correct types)
+      const payload = {
+        categoryId: itemForm.categoryId,
+        name: {
+          en: itemForm.name.en,
+          ar: itemForm.name.ar,
+        },
+        description: {
+          en: itemForm.description.en,
+          ar: itemForm.description.ar,
+        },
+        basePrice: String(itemForm.basePrice), // must be string for backend
+        image: itemForm.image || '',
+        hasSizes: !!itemForm.hasSizes,
+        hasModifiers: !!itemForm.hasModifiers,
+        active: !!itemForm.active,
+        sortOrder: Number(itemForm.sortOrder) || 0,
+      };
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...itemForm,
-          basePrice: parseFloat(itemForm.basePrice)
-        }),
+        body: JSON.stringify(payload),
       });
 
-      if (!response.ok) throw new Error('Failed to save item');
+      if (!response.ok) {
+        let errorMsg = 'Failed to save item';
+        try {
+          const err = await response.json();
+          if (err?.error) errorMsg = err.error;
+        } catch {}
+        throw new Error(errorMsg);
+      }
 
       toast({
         title: t('success'),
@@ -158,10 +204,10 @@ export function MenuManagement({ isActive }: MenuManagementProps) {
       setEditingItem(null);
       resetItemForm();
       fetchData();
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: t('error'),
-        description: t('failedToSaveItem'),
+        description: error?.message || t('failedToSaveItem'),
         variant: 'destructive',
       });
     }
@@ -678,12 +724,12 @@ export function MenuManagement({ isActive }: MenuManagementProps) {
                   <form onSubmit={handleItemSubmit} className="space-y-6">
                   <div>
                       <Label htmlFor="category" className="text-sm font-semibold">Category</Label>
-                    <Select 
-                      value={itemForm.categoryId} 
+                    <Select
+                      value={itemForm.categoryId}
                       onValueChange={(value) => setItemForm({ ...itemForm, categoryId: value })}
                     >
-                        <SelectTrigger className="h-12 rounded-xl">
-                          <SelectValue placeholder="Select Category" />
+                      <SelectTrigger className="h-12 rounded-xl">
+                        <SelectValue placeholder="Select Category" />
                       </SelectTrigger>
                       <SelectContent>
                         {categories.map((category) => (
